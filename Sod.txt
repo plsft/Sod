@@ -1,0 +1,476 @@
+/*
+Sod/
+ +-- Sod.csproj
+ +-- Schemas/
+      +-- SodSchema.cs
+      +-- SodString.cs
+      +-- SodNumber.cs
+      +-- SodDate.cs
+      +-- SodTime.cs
+      +-- SodArray.cs
+      +-- SodObject.cs
+	  
+	  <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>Sod.Schema.Source</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>YourName</Authors>
+    <Description>A simple, Zod-like fluent validation schema library for .NET.</Description>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IsPackable>true</IsPackable>
+    <PackageType>Dependency</PackageType>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <RepositoryUrl>https://github.com/yourusername/sod-schema</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>    
+    <Content Include="Schemas\/**\/*.cs">
+	  < Pack > true </ Pack >
+
+	  < PackagePath > contentFiles / cs / any / Sod /</ PackagePath >
+
+	  < BuildAction > Compile </ BuildAction >
+
+	  < CopyToOutput > false </ CopyToOutput >
+
+	</ Content >
+  </ ItemGroup >
+</ Project >
+
+
+```shell
+dotnet pack -c Release
+```
+
+```shell
+nupkg/Sod.Schema.Source.1.0.0.nupkg
+```
+
+```shell
+dotnet nuget push ./nupkg/Sod.Schema.Source.1.0.0.nupkg -k YOUR_API_KEY -s https://api.nuget.org/v3/index.json
+```
+
+```shell
+dotnet add package Sod.Schema.Source --version 1.0.0
+```
+
+# Sod Schema - Fluent Validation for .NET, offered as a source-only nuget by Noundry.
+
+A lightweight, easy-to-use, Zod-inspired fluent validation schema library for .NET. Sod simplifies data validation by providing strongly-typed schema definitions with clear and intuitive APIs.
+
+## ?? Features
+
+- **Fluent and readable API**
+- **Strongly-typed schema validation**
+- **Clear and informative validation errors**
+- **Easily extensible and customizable**
+- **Supports strings, numbers, decimals, floats, dates, times, arrays, and complex objects**
+
+## ?? Installation
+
+Install via NuGet as a **source-only package** to easily access and modify the source code directly in your project:
+
+```shell
+dotnet add package Sod.Schema.Source
+```
+
+## ?? Quickstart Example
+
+Here's a simple example demonstrating how you can validate a `User` object using Sod:
+
+```csharp
+using System;
+using System.Collections.Generic;
+using Sod;
+
+class Program
+{
+    static void Main()
+    {
+        var userSchema = new SodObject<User>()
+            .Field(u => u.Username, new SodString().Min(5).Max(15))
+            .Field(u => u.Age, new SodNumber().Min(18).Max(65))
+            .Field(u => u.BirthDate, new SodDate())
+            .Field(u => u.PreferredTimes, new SodArray<TimeSpan>(new SodTime()));
+
+        var userData = new Dictionary<string, object>
+        {
+            { "Username", "JohnDoe" },
+            { "Age", 30 },
+            { "BirthDate", "1993-02-15" },
+            { "PreferredTimes", new List<object> { "09:00:00", "14:30:00" } }
+        };
+
+        var result = userSchema.Parse(userData);
+
+        if (result.Success)
+        {
+            var user = result.Data;
+            Console.WriteLine($"User valid: {user.Username}, Age: {user.Age}, BirthDate: {user.BirthDate:d}");
+            Console.WriteLine("Preferred Times:");
+            foreach (var time in user.PreferredTimes)
+                Console.WriteLine(time);
+        }
+        else
+            Console.WriteLine($"Validation error: {result.Error}");
+    }
+}
+
+public class User
+{
+    public string Username { get; set; }
+    public int Age { get; set; }
+    public DateTime BirthDate { get; set; }
+    public List<TimeSpan> PreferredTimes { get; set; }
+}
+```
+
+## ??? Extensibility
+
+Because Sod is provided as a source-only NuGet package, you can easily modify or extend the library directly within your project. This makes it perfect for custom scenarios and unique validation requirements.
+
+## ?? License
+
+MIT License
+
+Copyright (c) 2024
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+var userSchema = new SodObject<User>()
+		  .Field(u => u.Username, new SodString().Min(5).Max(15))
+		  .Field(u => u.Age, new SodNumber().Min(18).Max(65))
+		  .Field(u => u.BirthDate, new SodDate())
+		  .Field(u => u.Income, new SodDecimal())
+		  .Field(u => u.Rate, new SodFloat())
+		  .Field(u => u.PreferredTimes, new SodArray<TimeSpan>(new SodTime()));
+
+
+var userData = new Dictionary<string, object>
+		{
+			{ "Username", "JohnDoe" },
+			{ "Age", 30 },
+			{ "BirthDate", "1993-02-15" },
+			{"Rate", 8.0},
+			{ "PreferredTimes", new List<object> { "09:00:00", "14:30:00" } },
+			{"Income", 130400.40 }
+		};
+
+		var result = userSchema.Parse(userData);
+
+		if (result.Success)
+		{
+			var user = result.Data;
+			Console.WriteLine($"User valid: {user.Username}, Age: {user.Age}, BirthDate: {user.BirthDate:d}, Rating: {user.Rate}, Income: {user.Income:c}");
+					Console.WriteLine("Preferred Times:");
+					
+					foreach (var time in user.PreferredTimes)
+						Console.WriteLine(time);
+}
+else
+{
+	Console.WriteLine($"Validation error: {result.Error}");
+}
+
+public sealed class User
+{
+	public string Username { get; set; }
+	public int Age { get; set; }
+	public float Rate {get;set;}
+	public DateTime BirthDate { get; set; }
+	public List<TimeSpan> PreferredTimes { get; set; }
+	public decimal Income {get;set;}
+}
+
+
+namespace Sod
+{
+	public abstract class SodSchema<T>
+	{
+		public abstract SodResult<T> Parse(object input);
+
+		protected SodResult<T> Ok(T value) => new SodResult<T>(true, value, null);
+
+		protected SodResult<T> Fail(string error) => new SodResult<T>(false, default, error);
+	}
+
+	public class SodResult<T>
+	{
+		public bool Success { get; }
+		public T Data { get; }
+		public string Error { get; }
+
+		public SodResult(bool success, T data, string error)
+		{
+			Success = success;
+			Data = data;
+			Error = error;
+		}
+	}
+
+	public class SodString : SodSchema<string>
+	{
+		private int? minLength;
+		private int? maxLength;
+
+		public SodString Min(int min)
+		{
+			minLength = min;
+			return this;
+		}
+
+		public SodString Max(int max)
+		{
+			maxLength = max;
+			return this;
+		}
+
+		public override SodResult<string> Parse(object input)
+		{
+			if (input is not string str)
+				return Fail("Expected a string.");
+
+			if (minLength.HasValue && str.Length < minLength.Value)
+				return Fail($"String must be at least {minLength.Value} characters.");
+
+			if (maxLength.HasValue && str.Length > maxLength.Value)
+				return Fail($"String must be at most {maxLength.Value} characters.");
+
+			return Ok(str);
+		}
+	}
+
+	public class SodFloat: SodSchema<float>
+	{
+		private float? min;
+		private float? max;
+
+		public SodFloat Min(float minValue)
+		{
+			min = minValue;
+			return this;
+		}
+
+		public SodFloat Max(float maxValue)
+		{
+			max = maxValue;
+			return this;
+		}
+
+		public override SodResult<float> Parse(object input)
+		{
+			if (!float.TryParse(input.ToString(), out var num))
+				return Fail("Expected an integer number.");
+
+			if (min.HasValue && num < min.Value)
+				return Fail($"Number must be at least {min.Value}.");
+
+			if (max.HasValue && num > max.Value)
+				return Fail($"Number must be at most {max.Value}.");
+
+			return Ok(num);
+		}
+	}
+
+
+	public class SodDecimal : SodSchema<decimal>
+	{
+		private decimal? min;
+		private decimal? max;
+
+		public SodDecimal Min(decimal minValue)
+		{
+			min = minValue;
+			return this;
+		}
+
+		public SodDecimal Max(decimal maxValue)
+		{
+			max = maxValue;
+			return this;
+		}
+
+		public override SodResult<decimal> Parse(object input)
+		{
+			if (!decimal.TryParse(input.ToString(), out var num))
+				return Fail("Expected an integer number.");
+
+			if (min.HasValue && num < min.Value)
+				return Fail($"Number must be at least {min.Value}.");
+
+			if (max.HasValue && num > max.Value)
+				return Fail($"Number must be at most {max.Value}.");
+
+			return Ok(num);
+		}
+	}
+
+	public class SodNumber : SodSchema<int>
+	{
+		private int? min;
+		private int? max;
+
+		public SodNumber Min(int minValue)
+		{
+			min = minValue;
+			return this;
+		}
+
+		public SodNumber Max(int maxValue)
+		{
+			max = maxValue;
+			return this;
+		}
+
+		public override SodResult<int> Parse(object input)
+		{
+			if (!int.TryParse(input.ToString(), out var num))
+				return Fail("Expected an integer number.");
+
+			if (min.HasValue && num < min.Value)
+				return Fail($"Number must be at least {min.Value}.");
+
+			if (max.HasValue && num > max.Value)
+				return Fail($"Number must be at most {max.Value}.");
+
+			return Ok(num);
+		}
+	}
+
+	public class SodDate : SodSchema<DateTime>
+	{
+		public override SodResult<DateTime> Parse(object input)
+		{
+			if (!DateTime.TryParse(input.ToString(), out var date))
+				return Fail("Expected a valid date.");
+
+			return Ok(date);
+		}
+	}
+
+	public class SodTime : SodSchema<TimeSpan>
+	{
+		public override SodResult<TimeSpan> Parse(object input)
+		{
+			if (!TimeSpan.TryParse(input.ToString(), out var time))
+				return Fail("Expected a valid time.");
+
+			return Ok(time);
+		}
+	}
+
+	public class SodArray<T> : SodSchema<List<T>>
+	{
+		private readonly SodSchema<T> elementSchema;
+
+		public SodArray(SodSchema<T> schema)
+		{
+			elementSchema = schema;
+		}
+
+		public override SodResult<List<T>> Parse(object input)
+		{
+			if (input is not IEnumerable<object> collection)
+				return Fail("Expected an array.");
+
+			var results = new List<T>();
+			var errors = new List<string>();
+
+			foreach (var item in collection)
+			{
+				var parsed = elementSchema.Parse(item);
+				if (!parsed.Success)
+					errors.Add(parsed.Error);
+				else
+					results.Add(parsed.Data);
+			}
+
+			if (errors.Any())
+				return Fail(string.Join("; ", errors));
+
+			return Ok(results);
+		}
+	}
+ 
+	public class SodObject<T> : SodSchema<T> where T : new()
+	{
+		private readonly Dictionary<string, SodSchema<object>> schemaFields = new();
+
+		public SodObject<T> Field<TField>(Expression<Func<T, TField>> fieldSelector, SodSchema<TField> schema)
+		{
+			if (fieldSelector.Body is not MemberExpression memberExpression)
+				throw new ArgumentException("Field selector must select a valid property.");
+
+			var propertyName = memberExpression.Member.Name;
+			schemaFields[propertyName] = new SodWrapperSchema<TField>(schema);
+
+			return this;
+		}
+
+		public override SodResult<T> Parse(object input)
+		{
+			if (input is not IDictionary<string, object> dict)
+				return Fail("Expected an object.");
+
+			var result = new T();
+			var errors = new List<string>();
+
+			foreach (var field in schemaFields)
+			{
+				if (!dict.TryGetValue(field.Key, out var value))
+				{
+					errors.Add($"Missing field '{field.Key}'.");
+					continue;
+				}
+
+				var parsed = field.Value.Parse(value);
+				if (!parsed.Success)
+					errors.Add($"Field '{field.Key}': {parsed.Error}");
+				else
+					typeof(T).GetProperty(field.Key)?.SetValue(result, parsed.Data);
+			}
+
+			if (errors.Any())
+				return Fail(string.Join("; ", errors));
+
+			return Ok(result);
+		}
+
+		private class SodWrapperSchema<TField> : SodSchema<object>
+		{
+			private readonly SodSchema<TField> innerSchema;
+
+			public SodWrapperSchema(SodSchema<TField> schema)
+			{
+				innerSchema = schema;
+			}
+
+			public override SodResult<object> Parse(object input)
+			{
+				var result = innerSchema.Parse(input);
+				return result.Success
+					? Ok((object)result.Data)
+					: Fail(result.Error);
+			}
+		}
+	}
+}
